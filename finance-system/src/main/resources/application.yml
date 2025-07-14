@@ -1,0 +1,28 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: finance-system
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: finance-system
+            client-secret: finance-system-secret
+            scope: openid,profile,email
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:8080/login/oauth2/code/keycloak
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak:8080/realms/company-realm
+
+  thymeleaf:
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+
+logging:
+  level:
+    com.example.financesystem: INFO
