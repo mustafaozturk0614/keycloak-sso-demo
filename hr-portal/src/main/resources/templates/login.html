@@ -1,0 +1,57 @@
+package com.example.hrportal.controller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+/**
+* Ana sayfa controller'ı
+* Kullanıcı bilgilerini ve diğer modüllere bağlantıları içerir
+*/
+@Controller
+public class HomeController {
+
+private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
+
+@GetMapping("/")
+public String home(Model model) {
+Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+logger.debug("Authentication object: {}", authentication);
+logger.debug("Principal type: {}", authentication != null ? authentication.getPrincipal().getClass() : "null");
+
+if (authentication != null && authentication.getPrincipal() instanceof OidcUser) {
+OidcUser user = (OidcUser) authentication.getPrincipal();
+
+logger.debug("User claims: {}", user.getClaims());
+logger.debug("User authorities: {}", user.getAuthorities());
+
+model.addAttribute("userName", user.getPreferredUsername());
+model.addAttribute("userEmail", user.getEmail());
+model.addAttribute("userRoles", user.getAuthorities());
+} else {
+logger.warn("User not authenticated or principal is not OidcUser. Principal: {}",
+authentication != null ? authentication.getPrincipal() : "null");
+model.addAttribute("userName", "Misafir");
+model.addAttribute("userEmail", "N/A");
+model.addAttribute("userRoles", "[Anonim]");
+}
+
+// Diğer modüllere linkler
+model.addAttribute("salesUrl", "http://localhost:8082/sales");
+model.addAttribute("financeUrl", "http://localhost:8083/finance");
+
+return "home";
+}
+
+@GetMapping("/login")
+public String login() {
+logger.debug("Login page requested");
+return "login";
+}
+}

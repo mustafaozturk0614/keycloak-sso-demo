@@ -1,0 +1,12 @@
+com\example\hrportal\config\HeaderBasedSecurityConfig.class
+com\example\hrportal\controller\HRController.class
+com\example\hrportal\security\UserPrincipal$UserPrincipalBuilder.class
+com\example\hrportal\controller\HRRestController$UserContext.class
+com\example\hrportal\controller\HRRestController.class
+com\example\hrportal\controller\OAuth2CallbackController.class
+com\example\hrportal\security\UserPrincipal.class
+com\example\hrportal\config\HeaderAuthenticationFilter$RoleParseResult.class
+com\example\hrportal\HrPortalApplication.class
+com\example\hrportal\config\HeaderAuthenticationFilter.class
+com\example\hrportal\config\JwtConfig.class
+com\example\hrportal\controller\HealthController.class

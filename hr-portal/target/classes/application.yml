@@ -1,0 +1,137 @@
+server:
+  port: 8082  # ✅ Updated port from 8081 to 8082
+
+spring:
+  application:
+    name: hr-portal-backend
+
+  # OAuth2 Configuration - Authorization Code Flow (Callback handling only)
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: hr-portal
+            client-secret: hr-portal-secret-2024
+            scope: openid,profile,email
+            authorization-grant-type: authorization_code
+            redirect-uri:  http://localhost:8000/oauth-callback
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak:8080/realms/company-realm
+            authorization-uri: http://keycloak:8080/realms/company-realm/protocol/openid-connect/auth
+            token-uri: http://keycloak:8080/realms/company-realm/protocol/openid-connect/token
+            jwk-set-uri: http://keycloak:8080/realms/company-realm/protocol/openid-connect/certs
+            user-info-uri: http://keycloak:8080/realms/company-realm/protocol/openid-connect/userinfo
+
+  # Thymeleaf Configuration
+  thymeleaf:
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
+  # Web Configuration
+  web:
+    resources:
+      static-locations: classpath:/static/
+      cache:
+        period: 0
+
+# Logging Configuration
+logging:
+  level:
+    com.example.hrportal: DEBUG
+    com.example.hrportal.security: TRACE
+    org.springframework.security: INFO  # Reduced - primary auth is header-based
+    org.springframework.security.oauth2: DEBUG  # OAuth2 callback handling
+    org.springframework.security.web: INFO
+    org.springframework.web: INFO
+    root: INFO
+
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management & Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  info:
+    env:
+      enabled: true
+  metrics:
+    export:
+      simple:
+        enabled: true
+
+# Application Info
+info:
+  app:
+    name: HR Portal Backend
+    description: KrakenD Optimized HR Management System with OAuth2 Callback
+    version: 2.0.0
+    port: 8082
+    authentication: Header-Based + OAuth2 Callback Hybrid
+    gateway: KrakenD on port 8000
+    oauth2:
+      callback-endpoint: /login/oauth2/code/keycloak
+      primary-auth: Header-based via KrakenD
+
+# Security Headers (additional to Spring Security)
+security:
+  headers:
+    frameOptions:
+      sameOrigin: true
+  error:
+    include-message: always
+    include-binding-errors: always
+  servlet:
+    session:
+      timeout: 30m
+
+# Custom Application Properties
+hr-portal:
+  security:
+    header-authentication:
+      enabled: true
+      user-id-header: X-User-ID
+      username-header: X-Username
+      email-header: X-User-Email
+      name-header: X-User-Name
+      roles-header: X-User-Roles
+      client-roles-header: X-Client-Roles
+
+  gateway:
+    base-url: http://localhost:8000
+    redirect-on-auth-failure: true
+    oauth2-callback-redirect: /dashboard
+
+  features:
+    role-based-access: true
+    oauth2-callback-handling: true
+    hr-access-level:
+      basic: HR_ACCESS
+      standard: hr_user
+      admin: hr_admin
+      system: admin
+
+  performance:
+    cache-enabled: true
+    async-processing: false
+
+  # OAuth2 Success Redirect
+  oauth2:
+    success-redirect-uri: /dashboard
+    failure-redirect-uri: /?error=oauth2_failed
+
+  environment:
+    - KRAKEND_LOG_LEVEL=debug

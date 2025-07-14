@@ -1,0 +1,395 @@
+# =============================================================================
+# 📁 docker-compose.yml - Minimal HR Portal Only
+# =============================================================================
+version: '3.8'
+
+services:
+  # 🚀 HR Portal Application - Standalone
+  hr-portal-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ${BUILD_TARGET:-production}
+    container_name: hr-portal-app
+    environment:
+      # Spring Profiles
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES:-docker}
+
+      # Server Configuration
+      SERVER_PORT: 8081
+      SERVER_SERVLET_CONTEXT_PATH: /
+
+      # External Database Configuration (existing Keycloak DB)
+      SPRING_DATASOURCE_URL: ${DATABASE_URL:-jdbc:postgresql://host.docker.internal:5460/demo-app}
+      SPRING_DATASOURCE_USERNAME: ${DATABASE_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DATABASE_PASSWORD:-password}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+
+      # JPA/Hibernate Configuration
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${JPA_DDL_AUTO:-update}
+      SPRING_JPA_SHOW_SQL: ${JPA_SHOW_SQL:-false}
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_TIME_ZONE: Europe/Istanbul
+
+      # External Keycloak Configuration
+      KEYCLOAK_BASE_URL: ${KEYCLOAK_BASE_URL:-http://host.docker.internal:8080}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-company-realm}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-hr-portal}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-hr-portal-secret}
+
+      # OAuth2 Configuration
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-hr-portal}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-hr-portal-secret}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_REDIRECT_URI: ${EXTERNAL_URL:-http://localhost:8081}/login/oauth2/code/keycloak
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: ${KEYCLOAK_BASE_URL:-http://host.docker.internal:8080}/realms/${KEYCLOAK_REALM:-company-realm}
+
+      # JWT Configuration
+      JWT_ISSUER_URI: ${KEYCLOAK_BASE_URL:-http://host.docker.internal:8080}/realms/${KEYCLOAK_REALM:-company-realm}
+      JWT_JWK_SET_URI: ${KEYCLOAK_BASE_URL:-http://host.docker.internal:8080}/realms/${KEYCLOAK_REALM:-company-realm}/protocol/openid-connect/certs
+
+      # KrakenD Integration
+      KRAKEND_ENABLED: ${KRAKEND_ENABLED:-true}
+      KRAKEND_BASE_URL: ${KRAKEND_BASE_URL:-http://host.docker.internal:8000}
+
+      # Application Configuration
+      HR_PORTAL_COMPANY_NAME: ${COMPANY_NAME:-Demo Company}
+      HR_PORTAL_ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@company.com}
+      HR_PORTAL_SUPPORT_EMAIL: ${SUPPORT_EMAIL:-support@company.com}
+      HR_PORTAL_FILE_UPLOAD_PATH: /app/uploads
+      HR_PORTAL_MAX_FILE_SIZE: 10MB
+
+      # Logging Configuration
+      LOGGING_LEVEL_COM_EXAMPLE_HRPORTAL: ${LOG_LEVEL:-INFO}
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: WARN
+      LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+      # Management & Monitoring
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: true
+
+      # JVM Configuration
+      JAVA_OPTS: >
+        -Xms512m -Xmx1024m
+        -XX:+UseG1GC
+        -XX:+UseStringDeduplication
+        -Djava.security.egd=file:/dev/./urandom
+        -Duser.timezone=Europe/Istanbul
+        -Dfile.encoding=UTF-8
+
+      # Timezone
+      TZ: Europe/Istanbul
+    ports:
+      - "${APP_PORT:-8081}:8081"
+    volumes:
+      - hr_portal_logs:/app/logs
+      - hr_portal_uploads:/app/uploads
+      - hr_portal_temp:/tmp
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - hr-portal-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    restart: unless-stopped
+
+# 📦 Volumes
+volumes:
+  hr_portal_logs:
+    driver: local
+  hr_portal_uploads:
+    driver: local
+  hr_portal_temp:
+    driver: local
+
+# 🌐 Networks
+networks:
+  hr-portal-network:
+    driver: bridge
+
+# =============================================================================
+# 📁 Dockerfile - Optimized for Standalone
+# =============================================================================
+---
+# syntax=docker/dockerfile:1
+FROM openjdk:21-jdk-slim as builder
+  
+  # Install build dependencies
+RUN apt-get update && apt-get install -y \
+maven \
+curl \
+&& rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+  
+  # Copy Maven files for dependency caching
+COPY pom.xml .
+COPY mvnw .
+COPY .mvn .mvn
+  
+  # Make mvnw executable and download dependencies
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
+  
+  # Copy source code
+COPY src ./src
+  
+  # Build application
+RUN ./mvnw clean package -DskipTests -B
+  
+  # Verify JAR file exists
+RUN ls -la target/ && \
+find target -name "*.jar" -type f | head -1 | xargs -I {} cp {} app.jar
+  
+  # Production stage
+FROM openjdk:21-jre-slim as production
+  
+  # Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+curl \
+dumb-init \
+&& rm -rf /var/lib/apt/lists/* \
+&& groupadd -r hrportal \
+&& useradd -r -g hrportal -d /app -s /sbin/nologin hrportal
+
+WORKDIR /app
+  
+  # Copy JAR from builder
+COPY --from=builder /app/app.jar app.jar
+  
+  # Create directories and set permissions
+RUN mkdir -p logs uploads temp && \
+chown -R hrportal:hrportal /app
+  
+  # Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+CMD curl -f http://localhost:8081/actuator/health || exit 1
+  
+  # Expose port
+EXPOSE 8081
+  
+  # Switch to non-root user
+USER hrportal
+  
+  # Default environment
+ENV SPRING_PROFILES_ACTIVE=docker
+ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
+  
+  # Use dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+  
+  # Start application
+CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+  
+  # Development stage
+FROM openjdk:21-jdk-slim as development
+
+RUN apt-get update && apt-get install -y \
+maven \
+curl \
+vim \
+&& rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+  
+  # Copy all source code for development
+COPY . .
+  
+  # Make mvnw executable
+RUN chmod +x mvnw
+  
+  # Expose ports (app + debug)
+EXPOSE 8081 5005
+  
+  # Development command with hot reload and debugging
+CMD ["./mvnw", "spring-boot:run", "-Dspring-boot.run.jvmArguments='-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=*:5005'"]
+
+# =============================================================================
+# 📁 .env - Environment Configuration
+# =============================================================================
+---
+# 🚀 Application Configuration
+APP_PORT=8081
+SPRING_PROFILES=docker
+BUILD_TARGET=production
+EXTERNAL_URL=http://localhost:8081
+  
+  # 🗄️ Database Configuration (External)
+DATABASE_URL=jdbc:postgresql://host.docker.internal:5460/demo-app
+DATABASE_USER=postgres
+DATABASE_PASSWORD=password
+JPA_DDL_AUTO=update
+JPA_SHOW_SQL=false
+  
+  # 🔑 Keycloak Configuration (External)
+KEYCLOAK_BASE_URL=http://host.docker.internal:8080
+KEYCLOAK_REALM=company-realm
+KEYCLOAK_CLIENT_ID=hr-portal
+KEYCLOAK_CLIENT_SECRET=hr-portal-secret
+  
+  # 🌐 KrakenD Integration (External)
+KRAKEND_ENABLED=true
+KRAKEND_BASE_URL=http://host.docker.internal:8000
+  
+  # 🏢 Company Configuration
+COMPANY_NAME=Demo Company
+ADMIN_EMAIL=admin@company.com
+SUPPORT_EMAIL=support@company.com
+  
+  # 🔧 Application Settings
+LOG_LEVEL=INFO
+
+# =============================================================================
+# 📁 scripts/start-hr-portal.sh
+# =============================================================================
+---
+#!/bin/bash
+  set -e
+  
+  echo "🚀 Starting HR Portal (Standalone)..."
+  echo "===================================="
+  
+  # Check Docker
+  if ! command -v docker &> /dev/null; then
+  echo "❌ Docker is not installed"
+  exit 1
+  fi
+  
+  if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+  echo "❌ Docker Compose is not installed"
+  exit 1
+  fi
+  
+  # Create .env if not exists
+  if [ ! -f .env ]; then
+  echo "📝 Creating .env file..."
+  cat > .env << 'EOF'
+  # HR Portal Standalone Configuration
+  APP_PORT=8081
+  SPRING_PROFILES=docker
+  BUILD_TARGET=production
+  EXTERNAL_URL=http://localhost:8081
+  
+  # External Database (Keycloak DB)
+  DATABASE_URL=jdbc:postgresql://host.docker.internal:5460/demo-app
+  DATABASE_USER=postgres
+  DATABASE_PASSWORD=password
+  
+  # External Keycloak
+  KEYCLOAK_BASE_URL=http://host.docker.internal:8080
+  KEYCLOAK_REALM=company-realm
+  KEYCLOAK_CLIENT_ID=hr-portal
+  KEYCLOAK_CLIENT_SECRET=hr-portal-secret
+  
+  # External KrakenD
+  KRAKEND_ENABLED=true
+  KRAKEND_BASE_URL=http://host.docker.internal:8000
+  
+  # Company Info
+  COMPANY_NAME=Demo Company
+  ADMIN_EMAIL=admin@company.com
+  SUPPORT_EMAIL=support@company.com
+  
+  LOG_LEVEL=INFO
+  EOF
+  echo "✅ .env file created. Please review and modify as needed."
+  fi
+  
+  # Create necessary directories
+  echo "📁 Creating directories..."
+  mkdir -p logs uploads
+  
+  # Check if external services are running
+  echo "🔍 Checking external services..."
+  
+  # Check if Keycloak is accessible
+  if curl -s -f "${KEYCLOAK_BASE_URL:-http://localhost:8080}/realms/${KEYCLOAK_REALM:-company-realm}" > /dev/null; then
+  echo "✅ Keycloak is accessible"
+  else
+echo "⚠️  Warning: Keycloak may not be accessible. Please ensure it's running."
+  fi
+  
+  # Check if database is accessible
+  if nc -z localhost 5460 2>/dev/null; then
+  echo "✅ Database is accessible"
+  else
+echo "⚠️  Warning: Database may not be accessible. Please ensure it's running on port 5460."
+  fi
+  
+  # Build and start HR Portal
+  echo "🏗️ Building HR Portal..."
+  docker-compose build hr-portal-app
+  
+  echo "🚀 Starting HR Portal..."
+  docker-compose up -d hr-portal-app
+  
+  echo "⏳ Waiting for HR Portal to start..."
+  sleep 30
+  
+  # Check health
+  if curl -s -f http://localhost:8081/actuator/health > /dev/null; then
+  echo "✅ HR Portal is healthy!"
+  else
+echo "⚠️  HR Portal may not be fully ready yet. Check logs: docker-compose logs -f hr-portal-app"
+  fi
+  
+  echo ""
+  echo "🎉 HR Portal Started Successfully!"
+  echo "=================================="
+  echo ""
+  echo "🌐 Service URLs:"
+echo "  • HR Portal Application: http://localhost:8081"
+echo "  • Health Check: http://localhost:8081/actuator/health"
+echo "  • Metrics: http://localhost:8081/actuator/prometheus"
+  echo ""
+  echo "📋 Next Steps:"
+  echo "  1. Ensure external Keycloak is running on port 8080"
+  echo "  2. Ensure external KrakenD is running on port 8000 (if enabled)"
+  echo "  3. Access HR Portal at http://localhost:8081"
+echo "  4. Check logs: docker-compose logs -f hr-portal-app"
+  echo ""
+  echo "🔧 Useful Commands:"
+echo "  • Stop: docker-compose down"
+echo "  • Restart: docker-compose restart hr-portal-app"
+echo "  • Logs: docker-compose logs -f hr-portal-app"
+echo "  • Shell: docker-compose exec hr-portal-app bash"
+
+# =============================================================================
+# 📁 scripts/stop-hr-portal.sh
+# =============================================================================
+---
+#!/bin/bash
+echo "🛑 Stopping HR Portal..."
+docker-compose down
+
+echo "✅ HR Portal stopped successfully!"
+
+# =============================================================================
+# 📁 scripts/logs-hr-portal.sh
+# =============================================================================
+---
+#!/bin/bash
+echo "📋 HR Portal Logs"
+echo "=================="
+docker-compose logs -f hr-portal-app
+
+# =============================================================================
+# 📁 scripts/restart-hr-portal.sh
+# =============================================================================
+---
+#!/bin/bash
+echo "🔄 Restarting HR Portal..."
+docker-compose restart hr-portal-app
+echo "✅ HR Portal restarted!"
+
+# =============================================================================
+# 📁 scripts/shell-hr-portal.sh
+# =============================================================================
+---
+#!/bin/bash
+echo "🐚 Opening HR Portal container shell..."
+docker-compose exec hr-portal-app bash

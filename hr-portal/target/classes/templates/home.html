@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Portal - İnsan Kaynakları</title>
+    
+    <!-- Bootstrap CSS -->
+    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">HR Portal</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Ana Sayfa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="${salesUrl}">Satış CRM</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="${financeUrl}">Finans Sistemi</a>
+                    </li>
+                </ul>
+                <div class="navbar-nav">
+                    <!-- Kullanıcı kimliği doğrulanmamışsa giriş butonu göster -->
+                    <div sec:authorize="!isAuthenticated()">
+                        <a class="btn btn-outline-light" th:href="@{/oauth2/authorization/keycloak}">Giriş Yap</a>
+                    </div>
+                    <!-- Kullanıcı kimliği doğrulanmışsa kullanıcı menüsünü göster -->
+                    <div sec:authorize="isAuthenticated()" class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <span th:text="${userName}">Kullanıcı</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" th:text="${userEmail}">email@example.com</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post">
+                                    <button type="submit" class="dropdown-item">Çıkış Yap</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Ana İçerik -->
+    <div class="container my-4">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card module-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Personel Yönetimi</h5>
+                        <p class="card-text">Personel bilgileri, izin takibi ve performans değerlendirmeleri.</p>
+                        <a href="#" class="btn btn-primary">Detaylar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card module-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">İş Başvuruları</h5>
+                        <p class="card-text">Açık pozisyonlar ve başvuru değerlendirmeleri.</p>
+                        <a href="#" class="btn btn-primary">Detaylar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card module-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Eğitim Yönetimi</h5>
+                        <p class="card-text">Eğitim planlaması ve kariyer gelişimi.</p>
+                        <a href="#" class="btn btn-primary">Detaylar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS ve jQuery -->
+    <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html> 

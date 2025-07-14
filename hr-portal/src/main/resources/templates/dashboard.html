@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Portal - Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #7c3aed;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --box-shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f8fafc;
+            line-height: 1.6;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-brand {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .sidebar-brand i {
+            background: var(--gradient-bg);
+            padding: 0.5rem;
+            border-radius: 8px;
+            margin-right: 0.75rem;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 0;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 0.75rem;
+            text-align: center;
+        }
+
+        .nav-badge {
+            background: var(--danger-color);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            box-shadow: var(--box-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            color: #64748b;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-right: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: #f1f5f9;
+            color: var(--primary-color);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            color: #64748b;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb i {
+            margin: 0 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: auto;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+
+        .nav-notifications {
+            position: relative;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-notifications:hover {
+            background: #f8fafc;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            background: var(--danger-color);
+            color: white;
+            font-size: 0.6rem;
+            padding: 0.125rem 0.25rem;
+            border-radius: 6px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .user-dropdown {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Page Content */
+        .page-content {
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow-lg);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-color);
+        }
+
+        .stat-card.success::before { background: var(--success-color); }
+        .stat-card.warning::before { background: var(--warning-color); }
+        .stat-card.danger::before { background: var(--danger-color); }
+        .stat-card.info::before { background: var(--info-color); }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .stat-icon.primary { background: var(--primary-color); }
+        .stat-icon.success { background: var(--success-color); }
+        .stat-icon.warning { background: var(--warning-color); }
+        .stat-icon.danger { background: var(--danger-color); }
+        .stat-icon.info { background: var(--info-color); }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .stat-change.positive {
+            color: var(--success-color);
+        }
+
+        .stat-change.negative {
+            color: var(--danger-color);
+        }
+
+        .stat-change i {
+            margin-right: 0.25rem;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: var(--box-shadow);
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--box-shadow-lg);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .action-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+
+        .action-description {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+            border: 1px solid #f1f5f9;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .chart-filter {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        /* Recent Activities */
+        .activity-list {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: 1px solid #f1f5f9;
+        }
+
+        .activity-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .activity-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f8fafc;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background: #f8fafc;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            color: var(--dark-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .activity-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .activity-status.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .activity-status.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .activity-status.info {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--info-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 1rem;
+            }
+
+            .search-input {
+                width: 200px;
+            }
+
+            .page-content {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .search-box {
+                display: none;
+            }
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+<!-- Sidebar Navigation -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a href="/dashboard" class="sidebar-brand">
+            <i class="fas fa-users-cog"></i>
+            HR Portal
+        </a>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-section-title">Ana Menü</div>
+            <div class="nav-item">
+                <a href="/dashboard" class="nav-link active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Personel Yönetimi</div>
+            <div class="nav-item">
+                <a href="/employees" class="nav-link">
+                    <i class="fas fa-users"></i>
+                    Personel Listesi
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/employees/add" class="nav-link">
+                    <i class="fas fa-user-plus"></i>
+                    Yeni Personel
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/departments" class="nav-link">
+                    <i class="fas fa-sitemap"></i>
+                    Departmanlar
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/positions" class="nav-link">
+                    <i class="fas fa-briefcase"></i>
+                    Pozisyonlar
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">İzin & Devamsızlık</div>
+            <div class="nav-item">
+                <a href="/leave/requests" class="nav-link">
+                    <i class="fas fa-calendar-times"></i>
+                    İzin Talepleri
+                    <span class="nav-badge">3</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/leave/calendar" class="nav-link">
+                    <i class="fas fa-calendar"></i>
+                    İzin Takvimi
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/attendance" class="nav-link">
+                    <i class="fas fa-clock"></i>
+                    Devamsızlık Takip
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">İşe Alım</div>
+            <div class="nav-item">
+                <a href="/recruitment/jobs" class="nav-link">
+                    <i class="fas fa-bullhorn"></i>
+                    İş İlanları
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/recruitment/applications" class="nav-link">
+                    <i class="fas fa-file-alt"></i>
+                    Başvurular
+                    <span class="nav-badge">12</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/recruitment/interviews" class="nav-link">
+                    <i class="fas fa-handshake"></i>
+                    Mülakatlar
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Performans</div>
+            <div class="nav-item">
+                <a href="/performance/evaluations" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    Değerlendirmeler
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/performance/goals" class="nav-link">
+                    <i class="fas fa-target"></i>
+                    Hedefler
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/performance/feedback" class="nav-link">
+                    <i class="fas fa-comments"></i>
+                    Geri Bildirimler
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Eğitim & Gelişim</div>
+            <div class="nav-item">
+                <a href="/training/programs" class="nav-link">
+                    <i class="fas fa-graduation-cap"></i>
+                    Eğitim Programları
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/training/certifications" class="nav-link">
+                    <i class="fas fa-certificate"></i>
+                    Sertifikalar
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Bordro & Özlük</div>
+            <div class="nav-item">
+                <a href="/payroll" class="nav-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Bordro İşlemleri
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/benefits" class="nav-link">
+                    <i class="fas fa-gift"></i>
+                    Yan Haklar
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Raporlar</div>
+            <div class="nav-item">
+                <a href="/reports/hr" class="nav-link">
+                    <i class="fas fa-chart-pie"></i>
+                    HR Raporları
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/reports/analytics" class="nav-link">
+                    <i class="fas fa-analytics"></i>
+                    Analitikler
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Sistem</div>
+            <div class="nav-item">
+                <a href="/settings" class="nav-link">
+                    <i class="fas fa-cog"></i>
+                    Ayarlar
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/users" class="nav-link">
+                    <i class="fas fa-users-cog"></i>
+                    Kullanıcı Yönetimi
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content" id="mainContent">
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="breadcrumb">
+                <a href="/dashboard">Dashboard</a>
+                <i class="fas fa-chevron-right"></i>
+                <span>Ana Sayfa</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Personel, departman veya pozisyon ara...">
+            </div>
+            <div class="nav-notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">5</span>
+            </div>
+            <div class="user-dropdown">
+                <div class="user-avatar" th:text="${#strings.substring(userName ?: 'U', 0, 1)}">U</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="page-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-subtitle">HR Portal ana kontrol paneli - Genel durum ve hızlı erişim</p>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Toplam Personel</div>
+                        <div class="stat-value">245</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +5 bu ay
+                        </div>
+                    </div>
+                    <div class="stat-icon primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Aktif Çalışan</div>
+                        <div class="stat-value">238</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +2 bu hafta
+                        </div>
+                    </div>
+                    <div class="stat-icon success">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Bekleyen İzin</div>
+                        <div class="stat-value">12</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +3 bugün
+                        </div>
+                    </div>
+                    <div class="stat-icon warning">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card danger">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Açık Pozisyon</div>
+                        <div class="stat-value">8</div>
+                        <div class="stat-change negative">
+                            <i class="fas fa-arrow-down"></i>
+                            -2 bu ay
+                        </div>
+                    </div>
+                    <div class="stat-icon danger">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card info">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Yeni Başvuru</div>
+                        <div class="stat-value">34</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +12 bu hafta
+                        </div>
+                    </div>
+                    <div class="stat-icon info">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Ortalama Maaş</div>
+                        <div class="stat-value">₺15,450</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            +3.2% bu yıl
+                        </div>
+                    </div>
+                    <div class="stat-icon primary">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="/employees/add" class="action-card">
+                <div class="action-icon" style="background: var(--primary-color);">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="action-title">Yeni Personel Ekle</div>
+                <div class="action-description">Sisteme yeni çalışan kaydı oluştur</div>
+            </a>
+
+            <a href="/leave/requests" class="action-card">
+                <div class="action-icon" style="background: var(--warning-color);">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <div class="action-title">İzin Taleplerini Gör</div>
+                <div class="action-description">Bekleyen izin taleplerini incele</div>
+            </a>
+
+            <a href="/recruitment/jobs/add" class="action-card">
+                <div class="action-icon" style="background: var(--success-color);">
+                    <i class="fas fa-bullhorn"></i>
+                </div>
+                <div class="action-title">İş İlanı Yayınla</div>
+                <div class="action-description">Açık pozisyon için ilan oluştur</div>
+            </a>
+
+            <a href="/payroll/process" class="action-card">
+                <div class="action-icon" style="background: var(--info-color);">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="action-title">Bordro İşle</div>
+                <div class="action-description">Aylık bordro hesaplamalarını başlat</div>
+            </a>
+
+            <a href="/performance/evaluations" class="action-card">
+                <div class="action-icon" style="background: var(--secondary-color);">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="action-title">Performans Değerlendir</div>
+                <div class="action-description">Çalışan performanslarını incele</div>
+            </a>
+
+            <a href="/reports/hr" class="action-card">
+                <div class="action-icon" style="background: var(--dark-color);">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="action-title">HR Raporları</div>
+                <div class="action-description">Detaylı analiz ve raporlar</div>
+            </a>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Personel Trend Analizi</h3>
+                    <select class="chart-filter">
+                        <option>Son 6 Ay</option>
+                        <option>Son 1 Yıl</option>
+                        <option>Son 2 Yıl</option>
+                    </select>
+                </div>
+                <canvas id="employeeTrendChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Departman Dağılımı</h3>
+                </div>
+                <canvas id="departmentChart" width="300" height="300"></canvas>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="activity-list">
+                <div class="activity-header">
+                    <h3 class="chart-title">Son Aktiviteler</h3>
+                    <a href="/activities/all" style="color: var(--primary-color); text-decoration: none;">
+                        Tümünü Gör <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-avatar">BA</div>
+                    <div class="activity-content">
+                        <div class="activity-text">Burak Aslan dashboard'a giriş yaptı</div>
+                        <div class="activity-time">2 dakika önce</div>
+                    </div>
+                    <div class="activity-status success">Başarılı</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-avatar">AY</div>
+                    <div class="activity-content">
+                        <div class="activity-text">Ahmet Yılmaz izin talebinde bulundu</div>
+                        <div class="activity-time">15 dakika önce</div>
+                    </div>
+                    <div class="activity-status warning">Beklemede</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-avatar">MD</div>
+                    <div class="activity-content">
+                        <div class="activity-text">Mehmet Demir profil bilgilerini güncelledi</div>
+                        <div class="activity-time">1 saat önce</div>
+                    </div>
+                    <div class="activity-status info">Tamamlandı</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-avatar">FK</div>
+                    <div class="activity-content">
+                        <div class="activity-text">Fatma Kaya yeni personel ekledi</div>
+                        <div class="activity-time">2 saat önce</div>
+                    </div>
+                    <div class="activity-status success">Başarılı</div>
+                </div>
+            </div>
+        </div>
+</main>
+
+<script>
+    // Sidebar toggle functionality
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+
+        sidebar.classList.toggle('hidden');
+        mainContent.classList.toggle('expanded');
+
+        // Store sidebar state
+        localStorage.setItem('sidebarHidden', sidebar.classList.contains('hidden'));
+    }
+
+    // Restore sidebar state on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
+        if (sidebarHidden) {
+            document.getElementById('sidebar').classList.add('hidden');
+            document.getElementById('mainContent').classList.add('expanded');
+        }
+
+        // Initialize charts
+        initializeCharts();
+
+        // Add responsive behavior
+        handleResponsive();
+    });
+
+    // Chart initialization
+    function initializeCharts() {
+        // Employee Trend Chart
+        const trendCtx = document.getElementById('employeeTrendChart');
+        if (trendCtx) {
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'],
+                    datasets: [{
+                        label: 'Toplam Personel',
+                        data: [220, 225, 230, 235, 240, 245],
+                        borderColor: 'rgb(79, 70, 229)',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Yeni İşe Alınan',
+                        data: [8, 12, 10, 15, 18, 14],
+                        borderColor: 'rgb(16, 185, 129)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Department Chart
+        const deptCtx = document.getElementById('departmentChart');
+        if (deptCtx) {
+            new Chart(deptCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['IT', 'İK', 'Pazarlama', 'Satış', 'Muhasebe', 'Diğer'],
+                    datasets: [{
+                        data: [45, 35, 25, 30, 20, 15],
+                        backgroundColor: [
+                            'rgb(79, 70, 229)',
+                            'rgb(16, 185, 129)',
+                            'rgb(245, 158, 11)',
+                            'rgb(239, 68, 68)',
+                            'rgb(6, 182, 212)',
+                            'rgb(139, 92, 246)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Responsive handling
+    function handleResponsive() {
+        function checkWindowSize() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            if (window.innerWidth <= 1024) {
+                sidebar.classList.add('hidden');
+                mainContent.classList.add('expanded');
+            } else {
+                const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
+                if (!sidebarHidden) {
+                    sidebar.classList.remove('hidden');
+                    mainContent.classList.remove('expanded');
+                }
+            }
+        }
+
+        checkWindowSize();
+        window.addEventListener('resize', checkWindowSize);
+    }
+
+    // Search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const query = this.value.trim();
+                    if (query) {
+                        // Implement search functionality
+                        console.log('Searching for:', query);
+                        // window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                    }
+                }
+            });
+        }
+    });
+
+    // Notification handling
+    function showNotifications() {
+        // Implement notification dropdown
+        console.log('Showing notifications...');
+    }
+
+    // User dropdown handling
+    function showUserMenu() {
+        // Implement user menu dropdown
+        console.log('Showing user menu...');
+    }
+
+    // Auto-refresh dashboard data
+    setInterval(function() {
+        // Refresh dashboard statistics
+        refreshDashboardStats();
+    }, 300000); // 5 minutes
+
+    function refreshDashboardStats() {
+        // Implement auto-refresh logic
+        console.log('Refreshing dashboard stats...');
+    }
+
+    // Error handling
+    window.addEventListener('error', function(e) {
+        console.error('Dashboard error:', e);
+    });
+</script>
+</body>
+</html>

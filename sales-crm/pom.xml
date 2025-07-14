@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Parent projesi -->
+    <parent>
+        <groupId>com.example</groupId>
+        <artifactId>keycloak-sso-demo</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>sales-crm</artifactId>
+    <name>Sales CRM</name>
+    <description>Satış CRM Modülü</description>
+
+    <properties>
+        <webjars-bootstrap.version>5.3.2</webjars-bootstrap.version>
+        <webjars-jquery.version>3.7.1</webjars-jquery.version>
+    </properties>
+
+    <dependencies>
+        <!-- WebJars -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>${webjars-bootstrap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery</artifactId>
+            <version>${webjars-jquery.version}</version>
+        </dependency>
+    </dependencies>
+</project> 

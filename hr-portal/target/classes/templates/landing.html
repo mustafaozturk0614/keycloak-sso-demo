@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Portal - İnsan Kaynakları Yönetim Sistemi</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #7c3aed;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --border-radius: 15px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--gradient-bg);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: var(--gradient-bg);
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-text {
+            color: white;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .hero-features {
+            list-style: none;
+            margin-bottom: 3rem;
+        }
+
+        .hero-features li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .hero-features li i {
+            color: var(--success-color);
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            color: var(--primary-color);
+            box-shadow: var(--box-shadow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255,255,255,0.2);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.6);
+            transform: translateY(-2px);
+        }
+
+        .hero-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dashboard-preview {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-preview::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .preview-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: white;
+        }
+
+        .preview-icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 5rem 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            font-size: 1.2rem;
+            color: #64748b;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .feature-icon.personnel { background: linear-gradient(135deg, #10b981, #059669); }
+        .feature-icon.recruitment { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .feature-icon.training { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .feature-icon.payroll { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .feature-icon.performance { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .feature-icon.analytics { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Login Section */
+        .login-section {
+            padding: 5rem 0;
+            background: var(--gradient-bg);
+            color: white;
+            text-align: center;
+        }
+
+        .login-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .login-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: var(--box-shadow);
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .login-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .auth-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .auth-btn {
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .auth-btn.sso {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            color: var(--primary-color);
+        }
+
+        .auth-btn.sso:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255,255,255,0.2);
+        }
+
+        .auth-btn.manual {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .auth-btn.manual:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.6);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2rem;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .cta-buttons {
+                justify-content: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(79, 70, 229, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h3>HR Portal'a Yönlendiriliyor...</h3>
+        <p>Lütfen bekleyin, sisteme giriş yapılıyor</p>
+    </div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-container">
+        <div class="hero-content animate__animated animate__fadeIn">
+            <div class="hero-text">
+                <h1 class="hero-title animate__animated animate__fadeInUp">
+                    HR Portal
+                    <br>
+                    <span style="background: linear-gradient(135deg, #10b981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            İnsan Kaynakları
+                        </span>
+                </h1>
+                <p class="hero-subtitle animate__animated animate__fadeInUp animate__delay-1s">
+                    Modern, güvenli ve kullanıcı dostu insan kaynakları yönetim sistemi.
+                    Personel yönetiminden performans değerlendirmesine kadar tüm HR süreçlerinizi tek platformda yönetin.
+                </p>
+                <ul class="hero-features animate__animated animate__fadeInUp animate__delay-2s">
+                    <li><i class="fas fa-check-circle"></i> Keycloak SSO Entegrasyonu</li>
+                    <li><i class="fas fa-check-circle"></i> Personel Bilgi Yönetimi</li>
+                    <li><i class="fas fa-check-circle"></i> İzin ve Devamsızlık Takibi</li>
+                    <li><i class="fas fa-check-circle"></i> Performans Değerlendirme</li>
+                    <li><i class="fas fa-check-circle"></i> Bordro ve Özlük İşlemleri</li>
+                </ul>
+                <div class="cta-buttons animate__animated animate__fadeInUp animate__delay-3s">
+                    <a href="#login" class="btn btn-primary" onclick="scrollToLogin()">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sisteme Giriş
+                    </a>
+                    <a href="#features" class="btn btn-outline" onclick="scrollToFeatures()">
+                        <i class="fas fa-info-circle"></i>
+                        Özellikler
+                    </a>
+                </div>
+            </div>
+            <div class="hero-visual animate__animated animate__fadeInRight animate__delay-1s">
+                <div class="dashboard-preview">
+                    <div class="preview-content">
+                        <div class="preview-icon">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h3>Modern Dashboard</h3>
+                        <p>Gelişmiş analitik ve raporlama araçları</p>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-number">150+</div>
+                                <div class="stat-label">Aktif Personel</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">98%</div>
+                                <div class="stat-label">Sistem Uptime</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">24/7</div>
+                                <div class="stat-label">Teknik Destek</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">5★</div>
+                                <div class="stat-label">Kullanıcı Puanı</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section" id="features">
+    <div class="features-container">
+        <div class="section-title animate__animated animate__fadeInUp">
+            <h2>HR Portal Özellikleri</h2>
+            <p>İnsan kaynakları süreçlerinizi dijitalleştirin ve verimliliğinizi artırın</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+                <div class="feature-icon personnel">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="feature-title">Personel Yönetimi</h3>
+                <p class="feature-description">
+                    Çalışan bilgileri, departman atamaları, rol yönetimi ve organizasyon şeması ile
+                    personel bilgilerinizi merkezi olarak yönetin.
+                </p>
+            </div>
+            <div class="feature-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                <div class="feature-icon recruitment">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h3 class="feature-title">İşe Alım Süreçleri</h3>
+                <p class="feature-description">
+                    İş ilanları, başvuru değerlendirme, mülakat yönetimi ve işe alım süreçlerini
+                    dijital ortamda takip edin.
+                </p>
+            </div>
+            <div class="feature-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+                <div class="feature-icon training">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3 class="feature-title">Eğitim & Gelişim</h3>
+                <p class="feature-description">
+                    Personel eğitim programları, gelişim planları ve sertifika takibi ile
+                    çalışan gelişimini destekleyin.
+                </p>
+            </div>
+            <div class="feature-card animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+                <div class="feature-icon payroll">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <h3 class="feature-title">Bordro & Özlük</h3>
+                <p class="feature-description">
+                    Maaş hesaplamaları, vergi işlemleri, SGK bildirimleri ve özlük işlemlerini
+                    otomatik olarak yönetin.
+                </p>
+            </div>
+            <div class="feature-card animate__animated animate__fadeInUp" style="animation-delay: 0.5s;">
+                <div class="feature-icon performance">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="feature-title">Performans Değerlendirme</h3>
+                <p class="feature-description">
+                    360 derece değerlendirme, hedef takibi ve performans analizleri ile
+                    çalışan performansını objektif olarak ölçün.
+                </p>
+            </div>
+            <div class="feature-card animate__animated animate__fadeInUp" style="animation-delay: 0.6s;">
+                <div class="feature-icon analytics">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <h3 class="feature-title">Analitik & Raporlama</h3>
+                <p class="feature-description">
+                    Detaylı HR analitikleri, özelleştirilebilir raporlar ve gerçek zamanlı
+                    dashboard'lar ile stratejik kararlar alın.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Login Section -->
+<section class="login-section" id="login">
+    <div class="login-container">
+        <div class="login-card animate__animated animate__fadeInUp">
+            <h2 class="login-title">HR Portal'a Giriş</h2>
+            <p class="login-subtitle">
+                Güvenli giriş yöntemlerinden birini seçerek HR Portal'a erişim sağlayın
+            </p>
+            <div class="auth-options">
+                <button class="auth-btn sso" onclick="loginWithSSO()">
+                    <i class="fas fa-shield-alt"></i>
+                    Keycloak SSO ile Giriş
+                    <small style="opacity: 0.8; font-size: 0.9rem;">(Önerilen)</small>
+                </button>
+
+                <button class="auth-btn manual" onclick="loginManually()">
+                    <i class="fas fa-key"></i>
+                    Manuel Giriş
+                    <small style="opacity: 0.8; font-size: 0.9rem;">(Yedek Yöntem)</small>
+                </button>
+            </div>
+            <div style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.8;">
+                <p><i class="fas fa-info-circle"></i>
+                    Teknik Destek: <a href="mailto:support@company.com" style="color: white;">support@company.com</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Smooth scrolling
+    function scrollToLogin() {
+        document.getElementById('login').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    function scrollToFeatures() {
+        document.getElementById('features').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    // SSO Login - Authorization Code Flow
+    function loginWithSSO() {
+        showLoading();
+        window.location.href = 'http://localhost:8080/realms/company-realm/protocol/openid-connect/auth' +
+            '?response_type=code' +
+            '&client_id=hr-portal' +
+            '&redirect_uri=http://localhost:8000/oauth-callback' +
+            '&scope=openid profile email';
+    }
+
+    function loginManually() {
+        showLoading();
+        // Direkt backend (fallback)
+        window.location.href = 'http://localhost:8082/dashboard';
+    }
+
+    // Loading overlay functions
+    function showLoading() {
+        document.getElementById('loadingOverlay').classList.add('show');
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').classList.remove('show');
+    }
+
+
+    // Check if user is already authenticated
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check for authentication status
+        checkAuthStatus();
+
+        // Initialize page animations
+        initPageAnimations();
+    });
+
+    function checkAuthStatus() {
+        // Check if we're coming from a successful authentication
+        const urlParams = new URLSearchParams(window.location.search);
+        const authSuccess = urlParams.get('auth');
+
+        if (authSuccess === 'success') {
+            // Auto-redirect to dashboard
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1000);
+        }
+    }
+
+    function initPageAnimations() {
+        // Animate elements on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate__fadeInUp');
+                }
+            });
+        });
+
+        document.querySelectorAll('.feature-card').forEach(card => {
+            observer.observe(card);
+        });
+    }
+
+    // Smooth scrolling functions
+    function scrollToLogin() {
+        document.getElementById('login').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    function scrollToFeatures() {
+        document.getElementById('features').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    // Error handling
+    window.addEventListener('error', function(e) {
+        console.error('Page error:', e);
+        hideLoading();
+    });
+
+    // Prevent back button after successful login
+    if (window.location.href.includes('dashboard') || window.location.href.includes('home')) {
+        history.pushState(null, null, window.location.href);
+        window.addEventListener('popstate', function() {
+            history.pushState(null, null, window.location.href);
+        });
+    }
+</script>
+</body>
+</html>

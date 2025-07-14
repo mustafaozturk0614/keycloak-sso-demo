@@ -1,0 +1,103 @@
+version: '3.8'
+
+# 🏢 HR Portal - Standalone Deployment
+# Mevcut Keycloak, KrakenD ve PostgreSQL servislerine bağlanır
+
+services:
+  # 🚀 HR Portal Backend - Spring Boot Application
+  hr-portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hr-portal-backend
+    environment:
+      # Spring Profiles
+      SPRING_PROFILES_ACTIVE: docker
+      
+      # 🗄️ Database Configuration - Mevcut demo-postgres'e bağlan
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5460/demo-app
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      
+      # JPA/Hibernate
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: false
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
+      
+      # 🔐 OAuth2 Configuration - Mevcut Keycloak'a bağlan
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:8080/realms/company-realm/protocol/openid-connect/certs
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://host.docker.internal:8080/realms/company-realm
+      
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_ID: hr-portal
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET: hr-portal-secret
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_REDIRECT_URI: http://localhost:8000/login/oauth2/code/keycloak
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://host.docker.internal:8080/realms/company-realm
+      
+      # Application Configuration
+      SERVER_PORT: 8082  # Internal container port
+      SERVER_SERVLET_CONTEXT_PATH: /
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      
+      # Logging
+      LOGGING_LEVEL_COM_EXAMPLE_HRPORTAL: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY_OAUTH2: INFO
+      LOGGING_PATTERN_CONSOLE: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n"
+      
+      # Management Endpoints
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
+      MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: true
+      MANAGEMENT_HEALTH_LIVENESSSTATE_ENABLED: true
+      MANAGEMENT_HEALTH_READINESSSTATE_ENABLED: true
+      
+      # JVM Options
+      JAVA_OPTS: "-Xms512m -Xmx1024m -XX:+UseG1GC -XX:+UseStringDeduplication -Djava.security.egd=file:/dev/./urandom"
+      
+      # Timezone
+      TZ: "Europe/Istanbul"
+    
+    ports:
+      - "8082:8082"  # Host:Container port mapping
+    
+    volumes:
+      - hr_portal_logs:/app/logs
+      - hr_portal_temp:/tmp
+    
+    # 🌐 External Services - Host üzerinde çalışan servislere bağlan
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    
+    networks:
+      - keycloak-network  # Mevcut network'e katıl
+    
+    # Health Check
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8082/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    
+    restart: unless-stopped
+    
+    labels:
+      - "com.hr-portal.service=backend"
+      - "com.hr-portal.version=2.0.0"
+      - "com.hr-portal.environment=docker"
+
+# 💾 Volumes - HR Portal için
+volumes:
+  hr_portal_logs:
+    driver: local
+    name: hr-portal-logs
+  hr_portal_temp:
+    driver: local
+    name: hr-portal-temp
+
+# 🌐 Networks - Mevcut network'i kullan
+networks:
+  keycloak-network:
+    driver: bridge

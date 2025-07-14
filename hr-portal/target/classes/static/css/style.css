@@ -1,0 +1,43 @@
+body {
+    background-color: #f8f9fa; /* Hafif gri bir arka plan */
+}
+
+.navbar {
+    margin-bottom: 20px; /* Navbar altına boşluk */
+}
+
+.container {
+    padding-top: 20px; /* İçerik başlangıcına boşluk */
+}
+
+.module-card {
+    border: none; /* Kenarlık yok */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Hafif gölge */
+    border-radius: 8px; /* Yuvarlak köşeler */
+}
+
+.module-card .card-body {
+    padding: 30px; /* İç dolgu */
+}
+
+.module-card .card-title {
+    color: #007bff; /* Başlık rengi */
+    font-size: 1.5rem; /* Başlık boyutu */
+    margin-bottom: 15px; /* Başlık altına boşluk */
+}
+
+.module-card .card-text {
+    color: #6c757d; /* Metin rengi */
+    font-size: 1rem; /* Metin boyutu */
+    margin-bottom: 20px; /* Metin altına boşluk */
+}
+
+.module-card .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.module-card .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+} 

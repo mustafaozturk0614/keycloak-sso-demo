@@ -1,0 +1,93 @@
+2025-07-12 11:47:12.241 [main] ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to bind properties under 'logging.level.org.hibernate.sql' to org.springframework.boot.logging.LogLevel:
+
+    Property: logging.level.org.hibernate.sql
+    Value: "true"
+    Origin: class path resource [application.yml] - 189:24
+    Reason: failed to convert java.lang.Boolean to org.springframework.boot.logging.LogLevel (caused by java.lang.IllegalArgumentException: No enum constant org.springframework.boot.logging.LogLevel.true)
+
+Action:
+
+Update your application's configuration. The following values are valid:
+
+    DEBUG
+    ERROR
+    FATAL
+    INFO
+    OFF
+    TRACE
+    WARN
+
+2025-07-12 11:47:36.842 [main] ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to bind properties under 'logging.level.org.hibernate.sql' to org.springframework.boot.logging.LogLevel:
+
+    Property: logging.level.org.hibernate.sql
+    Value: "true"
+    Origin: class path resource [application.yml] - 189:24
+    Reason: failed to convert java.lang.Boolean to org.springframework.boot.logging.LogLevel (caused by java.lang.IllegalArgumentException: No enum constant org.springframework.boot.logging.LogLevel.true)
+
+Action:
+
+Update your application's configuration. The following values are valid:
+
+    DEBUG
+    ERROR
+    FATAL
+    INFO
+    OFF
+    TRACE
+    WARN
+
+2025-07-12 11:48:21.340 [main] INFO  c.e.hrportal.HrPortalApplication - Starting HrPortalApplication using Java 17.0.15 with PID 200 (C:\Users\Mindtro\OneDrive\Masaüstü\ssoApp\keycloak-sso-demo\hr-portal\target\classes started by Mindtro in C:\Users\Mindtro\OneDrive\Masaüstü\ssoApp\keycloak-sso-demo)
+2025-07-12 11:48:21.343 [main] DEBUG c.e.hrportal.HrPortalApplication - Running with Spring Boot v3.2.0, Spring v6.1.1
+2025-07-12 11:48:21.345 [main] INFO  c.e.hrportal.HrPortalApplication - The following 1 profile is active: "local"
+2025-07-12 11:48:23.434 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
+2025-07-12 11:48:23.457 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-07-12 11:48:23.458 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-07-12 11:48:23.595 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-07-12 11:48:23.596 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2151 ms
+2025-07-12 11:48:24.543 [main] INFO  c.e.h.config.JwtSecurityConfig - 🔐 JWT Resource Server configuration completed
+2025-07-12 11:48:24.945 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
+2025-07-12 11:48:24.960 [main] INFO  c.e.hrportal.HrPortalApplication - Started HrPortalApplication in 4.559 seconds (process running for 5.642)
+2025-07-12 12:30:04.689 [main] INFO  c.e.hrportal.HrPortalApplication - Starting HrPortalApplication using Java 17.0.15 with PID 29700 (C:\Users\Mindtro\OneDrive\Masaüstü\ssoApp\keycloak-sso-demo\hr-portal\target\classes started by Mindtro in C:\Users\Mindtro\OneDrive\Masaüstü\ssoApp\keycloak-sso-demo)
+2025-07-12 12:30:04.693 [main] INFO  c.e.hrportal.HrPortalApplication - No active profile set, falling back to 1 default profile: "default"
+2025-07-12 12:30:07.393 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8082 (http)
+2025-07-12 12:30:07.419 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-07-12 12:30:07.420 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-07-12 12:30:07.560 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-07-12 12:30:07.561 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2753 ms
+2025-07-12 12:30:08.608 [main] INFO  c.e.h.config.JwtSecurityConfig - 🔐 Configuring JWT Security Filter Chain...
+2025-07-12 12:30:08.929 [main] INFO  c.e.h.config.JwtSecurityConfig - 🔑 Configuring JWT Decoder with JWK Set URI: http://localhost:8080/realms/company-realm/protocol/openid-connect/certs
+2025-07-12 12:30:08.989 [main] INFO  c.e.h.config.JwtSecurityConfig - ✅ JWT Decoder configured successfully
+2025-07-12 12:30:08.993 [main] INFO  c.e.h.config.JwtSecurityConfig - ✅ JWT Resource Server configuration completed
+2025-07-12 12:30:09.035 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@6e24ce51, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@423ed3b5, org.springframework.security.web.context.SecurityContextHolderFilter@6a55594b, org.springframework.security.web.header.HeaderWriterFilter@7c11d32, org.springframework.web.filter.CorsFilter@5d124d29, org.springframework.security.web.authentication.logout.LogoutFilter@5e1a5f, org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter@7d9c45ee, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@44598ef7, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@57fdb8a4, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@3c88191b, org.springframework.security.web.session.SessionManagementFilter@42297bdf, org.springframework.security.web.access.ExceptionTranslationFilter@6282b9f5, org.springframework.security.web.access.intercept.AuthorizationFilter@11f23203]
+2025-07-12 12:30:09.505 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8082 (http) with context path ''
+2025-07-12 12:30:09.526 [main] INFO  c.e.hrportal.HrPortalApplication - Started HrPortalApplication in 6.252 seconds (process running for 8.185)
+2025-07-12 12:30:52.034 [http-nio-8082-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-07-12 12:30:52.035 [http-nio-8082-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-07-12 12:30:52.039 [http-nio-8082-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 3 ms
+2025-07-12 12:30:52.070 [http-nio-8082-exec-1] WARN  o.s.w.s.h.HandlerMappingIntrospector - Cache miss for REQUEST dispatch to '/admin/master/console/' (previous null). Performing CorsConfiguration lookup. This is logged once only at WARN level, and every time at TRACE.
+2025-07-12 12:30:52.094 [http-nio-8082-exec-1] WARN  o.s.w.s.h.HandlerMappingIntrospector - Cache miss for REQUEST dispatch to '/admin/master/console/' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+2025-07-12 12:30:52.112 [http-nio-8082-exec-1] WARN  c.e.h.config.JwtSecurityConfig - 🚫 JWT Authentication failed for URI: /admin/master/console/ - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36
+2025-07-12 12:30:52.113 [http-nio-8082-exec-1] INFO  c.e.h.config.JwtSecurityConfig - 🔄 Redirecting to landing page: /?error=auth_required
+2025-07-12 12:30:52.184 [http-nio-8082-exec-2] INFO  c.e.hrportal.controller.HRController - 🏠 Landing page accessed from IP: 0:0:0:0:0:0:0:1
+2025-07-12 12:31:33.194 [http-nio-8082-exec-8] WARN  c.e.h.config.JwtSecurityConfig - 🚫 JWT Authentication failed for URI: /auth/login - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36
+2025-07-12 12:31:33.195 [http-nio-8082-exec-8] INFO  c.e.h.config.JwtSecurityConfig - 🔄 Redirecting to landing page: /?error=auth_required
+2025-07-12 12:31:33.207 [http-nio-8082-exec-9] INFO  c.e.hrportal.controller.HRController - 🏠 Landing page accessed from IP: 0:0:0:0:0:0:0:1
+2025-07-12 12:31:51.049 [http-nio-8082-exec-7] WARN  c.e.h.config.JwtSecurityConfig - 🚫 JWT Authentication failed for URI: /auth/login - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36
+2025-07-12 12:31:51.050 [http-nio-8082-exec-7] INFO  c.e.h.config.JwtSecurityConfig - 🔄 Redirecting to landing page: /?error=auth_required
+2025-07-12 12:31:51.061 [http-nio-8082-exec-1] INFO  c.e.hrportal.controller.HRController - 🏠 Landing page accessed from IP: 0:0:0:0:0:0:0:1
